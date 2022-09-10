@@ -51,3 +51,54 @@ export interface DMMFToElementsResult {
   nodes: Array<Node<EnumNodeData> | Node<ModelNodeData>>;
   edges: Edge[];
 }
+
+export interface schemaType {
+  command: string;
+  entities: entitiesType[];
+  name: string;
+  _conf: {
+    enable: {
+      command: string;
+      value: boolean;
+    };
+  };
+}
+
+export interface entitiesType {
+  attributes: attributesTYPE[];
+  command: string;
+  name: string;
+  _conf: {
+    accessControl: { read: string[]; write: string[] };
+    businessRule: boolean;
+    concurrencyControl: boolean;
+    dbType: string;
+    indexKey: any[];
+    uniqueKey: any[];
+  };
+}
+
+export interface attributesTYPE {
+  command: string;
+  name: string;
+  _conf: {
+    nullable?: boolean;
+    length?: string;
+    type: {
+      value: string;
+      command: string;
+    };
+  };
+}
+
+export interface relationFieldType {
+  entityName: string;
+  command: string;
+  name: string;
+  _conf: {
+    type: {
+      value: string;
+      command: string;
+    };
+  };
+}

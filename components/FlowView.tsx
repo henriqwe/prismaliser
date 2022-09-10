@@ -9,8 +9,8 @@ import ReactFlow, {
 import EnumNode from "~/components/EnumNode";
 import ModelNode from "~/components/ModelNode";
 import RelationEdge from "~/components/RelationEdge";
-import { dmmfToElements } from "~/util/dmmfToElements";
-import { DMMFToElementsResult } from "~/util/types";
+import { dmmfToElements, schemaToElements } from "~/util/dmmfToElements";
+import { DMMFToElementsResult, schemaType } from "~/util/types";
 
 import type { DMMF } from "@prisma/generator-helper";
 
@@ -23,7 +23,7 @@ const edgeTypes = {
   relation: RelationEdge,
 };
 
-const FlowView = ({ dmmf }: FlowViewProps) => {
+const FlowView = ({ dmmf, schema }: FlowViewProps) => {
   // TODO: move to controlled nodes/edges, and change this to generate a NodeChanges[] as a diff so that positions gets preserved.
   // Will be more complex but gives us better control over how they're handled, and makes storing locations EZ.
   // https://reactflow.dev/docs/guides/migrate-to-v10/#11-controlled-nodes-and-edges
@@ -35,11 +35,23 @@ const FlowView = ({ dmmf }: FlowViewProps) => {
     [dmmf]
   );
 
+  const { nodes: nodes_ycl, edges: edges_ycl } = useMemo(
+    () =>
+      schema
+        ? schemaToElements(schema)
+        : ({ nodes: [], edges: [] } as DMMFToElementsResult),
+    [schema]
+  );
+  // console.group("nodes");
+  // console.log({ nodes, edges });
+  // console.log({ nodes_ycl, edges_ycl });
+  // console.groupEnd();
+
   return (
     <>
       <ReactFlow
-        defaultNodes={nodes}
-        defaultEdges={edges}
+        defaultNodes={nodes_ycl}
+        defaultEdges={edges_ycl}
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         minZoom={0.1}
@@ -99,6 +111,7 @@ const FlowView = ({ dmmf }: FlowViewProps) => {
 
 export interface FlowViewProps {
   dmmf: DMMF.Datamodel | null;
+  schema: schemaType | undefined;
 }
 
 export default FlowView;

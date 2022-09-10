@@ -1,6 +1,6 @@
 import { useMonaco } from "@monaco-editor/react";
 import React, { useEffect, useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
+import { useDebounce } from "react-use";
 import useFetch from "use-http";
 
 import CopyButton from "~/components/CopyButton";
@@ -8,12 +8,13 @@ import EditorView from "~/components/EditorView";
 import FlowView from "~/components/FlowView";
 import Layout from "~/components/Layout";
 import { fromUrlSafeB64 } from "~/util";
-import { ErrorTypes, SchemaError } from "~/util/types";
+import { ycl_transpiler } from "~/util/transpiler";
+import { ErrorTypes, SchemaError, schemaType } from "~/util/types";
 
 import type { DMMF } from "@prisma/generator-helper";
 import type { editor } from "monaco-editor";
 
-const initial = `
+const initial1 = `
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -47,23 +48,76 @@ enum Role {
   ADMIN
 }
 `.trim();
-
+const initial = `schema blog (
+  !enabled
+  'b6891cf5-5073-3a4b-a9e5-79443226a8a2'
+  '2dc12e3f-b7d5-3bef-9c1e-1641ae4a8182'
+) {
+  entity post (
+    sql
+  ) {
+    created (
+      Long
+    )
+    description (
+      String 256
+      !nullable
+    )
+    title (
+      String 256
+      !nullable
+    )
+    slug (
+      String 256
+      !nullable
+    )
+    content (
+      Text
+      !nullable
+    )
+  }
+  entity like (
+    sql
+  ) {
+    posttolike (
+      post
+    )
+    counter (
+      Integer
+    )
+  }
+  entity comment (
+    sql
+  ) {
+    post (
+      post
+      !nullable
+    )
+    postslug (
+      String 256
+      !nullable
+    )
+    created (
+      Long
+    )
+    content (
+      String 512
+    )
+  }
+}
+`.trim();
 const IndexPage = () => {
-  // TODO: multiple save states.
-  const [storedText, setStoredText] = useLocalStorage(
-    "prismaliser.text",
-    initial
-  );
-  const [text, setText] = useState(storedText!);
+  const [text, setText] = useState(initial);
   const [schemaErrors, setSchemaErrors] = useState<SchemaError[]>([]);
   const [dmmf, setDMMF] = useState<DMMF.Datamodel | null>(null);
+  const [schema, setSchema] = useState<schemaType>();
   const { post, response, loading } = useFetch("/api");
   const monaco = useMonaco();
 
   const submit = async () => {
-    setStoredText(text);
-    const resp = await post({ schema: text });
-
+    const resp = await post({ schema: initial1 });
+    const { schema: _schema } = ycl_transpiler.parse(text);
+    setSchema(_schema as schemaType);
     if (response.ok) {
       setDMMF(resp);
       setSchemaErrors([]);
@@ -111,7 +165,7 @@ const IndexPage = () => {
   return (
     <Layout>
       <section className="relative flex flex-col items-start border-r-2">
-        <EditorView value={text} onChange={(val) => setText(val!)} />
+        <EditorView value={text} onChange={(val) => setText(val)} />
 
         <div className="absolute flex gap-2 left-4 bottom-4">
           <CopyButton input={text} />
@@ -126,7 +180,7 @@ const IndexPage = () => {
         ) : null}
       </section>
       <pre className="overflow-auto border-l-2">
-        <FlowView dmmf={dmmf} />
+        <FlowView dmmf={dmmf} schema={schema} />
         {/* TODO: add a toggleable "debug" view that shows the raw data? */}
         {/* {JSON.stringify(data, null, 4)} */}
       </pre>
