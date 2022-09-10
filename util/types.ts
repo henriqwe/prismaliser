@@ -81,6 +81,7 @@ export interface entitiesType {
 export interface attributesTYPE {
   command: string;
   name: string;
+  relationName?: string;
   _conf: {
     nullable?: boolean;
     length?: string;

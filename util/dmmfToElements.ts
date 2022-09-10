@@ -107,6 +107,7 @@ const generateEntityNode = (
   relations: Readonly<Record<string, Relation>>
 ): Node<ModelNodeData> => {
   console.log("attributes", attributes);
+  console.log("relations", relations);
 
   const obj = {
     id: name,
@@ -131,17 +132,20 @@ const generateEntityNode = (
           // documentation,
           // isList = false,
           // isRequired,
-          // relationName,
+          relationName: (relations[_conf.type.value] as Relation | undefined)
+            ? _conf.type.value
+            : undefined,
           // relationFromFields,
           // relationToFields,
-          // relationType: (
-          //   (relationName && relations[relationName]) as Relation | undefined
-          // )?.type,
+          relationType: (
+            (_conf.type.value && relations[_conf.type.value]) as
+              | Relation
+              | undefined
+          )?.type,
           // `isList` and `isRequired` are mutually exclusive as per the spec
           displayType: !_conf.nullable
             ? _conf.type.value
             : `${_conf.type.value}?`,
-          //   _conf.type.value + (isList ? "[]" : !isRequired ? "?" : ""),
           type: _conf.type.value,
           // defaultValue: !hasDefaultValue
           //   ? null
@@ -203,7 +207,7 @@ const generateRelationEdge_ycl = ([relationName, { type, fields }]: [
         ...base,
         source: source.name,
         target: target.name,
-        sourceHandle: `${source.name}-${relationName}`,
+        sourceHandle: `${source.name}-${relationName}-${target.name}`,
         targetHandle: `${target.name}-${relationName}`,
       },
     ];
@@ -273,7 +277,7 @@ export const dmmfToElements = (data: DMMF.Datamodel): DMMFToElementsResult => {
         .filter((col) => col.kind === kind)
         .map((col) => ({ ...col, tableName }))
     );
-
+  console.log("data", data);
   const relationFields = filterFields("object");
   const enumFields = filterFields("enum");
   // console.log(" --- relationFields", relationFields);
@@ -282,7 +286,7 @@ export const dmmfToElements = (data: DMMF.Datamodel): DMMFToElementsResult => {
   // that pipeline operator.
   const intermediate1: Readonly<Record<string, readonly FieldWithTable[]>> =
     groupBy((col) => col.relationName!, relationFields);
-  // console.log("intermediate1", intermediate1);
+  // console.log("-------------intermediate1", intermediate1);
 
   const intermediate2: ReadonlyArray<[string, Relation]> = Object.entries(
     intermediate1
@@ -293,11 +297,11 @@ export const dmmfToElements = (data: DMMF.Datamodel): DMMFToElementsResult => {
       return [key, { type: "1-n", fields: [one, two] }];
     else return [key, { type: "1-1", fields: [one, two] }];
   });
-  // console.log("intermediate2", intermediate2);
+  // console.log("-------------------intermediate2", intermediate2);
 
   const relations: Readonly<Record<string, Relation>> =
     Object.fromEntries(intermediate2);
-  // console.log("relations", relations);
+  // console.log("dmmfToElements relations", relations);
 
   const implicitManyToMany = Object.entries(relations)
     .filter(([, { type }]) => type === "m-n")
@@ -353,7 +357,7 @@ export const schemaToElements = (data: schemaType): DMMFToElementsResult => {
     });
 
   const relationFields = filterFields();
-
+  console.log("-----------relationFields", relationFields);
   // // `pipe` typing broke so I have to do this for now. Reeeeaaaally fucking need
   // // that pipeline operator.
 
@@ -361,7 +365,7 @@ export const schemaToElements = (data: schemaType): DMMFToElementsResult => {
     entities: data.entities,
     relationFields,
   });
-  // console.log("schemaToElements intermediate1", intermediate1);
+  console.log("schemaToElements data.entities", data.entities);
 
   const intermediate2 = Object.entries(intermediate1).map(
     ([key, [one, two]]) => {

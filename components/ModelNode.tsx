@@ -105,21 +105,6 @@ const ModelNode = ({ data }: ModelNodeProps) => {
             <td className="p-2 font-mono border-t-2 border-r-2 border-gray-300">
               {col.displayType}
             </td>
-            <td className="font-mono border-t-2 border-gray-300">
-              <div className="relative p-2">
-                {col.defaultValue || ""}
-                {isSource(col) && (
-                  <Handle
-                    key={`${data.name}-${col.relationName}-${col.name}`}
-                    className={cc([styles.handle, styles.right])}
-                    type="source"
-                    id={`${data.name}-${col.relationName}-${col.name}`}
-                    position={Position.Right}
-                    isConnectable={false}
-                  />
-                )}
-              </div>
-            </td>
           </tr>
         ))}
       </tbody>

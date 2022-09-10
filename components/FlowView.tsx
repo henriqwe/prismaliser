@@ -42,10 +42,10 @@ const FlowView = ({ dmmf, schema }: FlowViewProps) => {
         : ({ nodes: [], edges: [] } as DMMFToElementsResult),
     [schema]
   );
-  // console.group("nodes");
-  // console.log({ nodes, edges });
-  // console.log({ nodes_ycl, edges_ycl });
-  // console.groupEnd();
+  console.group("nodes");
+  console.log({ nodes, edges });
+  console.log({ nodes_ycl, edges_ycl });
+  console.groupEnd();
 
   return (
     <>
