@@ -15,7 +15,7 @@ import { DMMFToElementsResult, schemaType } from "~/util/types";
 import type { DMMF } from "@prisma/generator-helper";
 
 const nodeTypes = {
-  model: ModelNode,
+  entity: ModelNode,
   enum: EnumNode,
 };
 

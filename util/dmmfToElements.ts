@@ -9,6 +9,7 @@ import {
   schemaType,
   entitiesType,
   relationFieldType,
+  attributesTYPE,
 } from "./types";
 
 import type { DMMF } from "@prisma/generator-helper";
@@ -97,7 +98,6 @@ const generateModelNode = (
       ),
     },
   };
-  console.log("obj", obj);
   return obj;
 };
 
@@ -106,21 +106,47 @@ const generateEntityNode = (
   { name, attributes }: entitiesType,
   relations: Readonly<Record<string, Relation>>
 ): Node<ModelNodeData> => {
+  const relationType: string[] = [];
+  const relationsSource: attributesTYPE[] = [];
+  Object.keys(relations).map((key) => {
+    if (
+      relations[key].fields[0].name !== name &&
+      relations[key].fields[1].name === name
+    )
+      relationsSource.push({ ...relations[key], name: key });
+  });
+  const relationsTarget = attributes.filter((attribute) => {
+    if (relations[attribute._conf.type.value] as Relation | undefined) {
+      relationType.push(relations[attribute._conf.type.value].type);
+      return true;
+    }
+  });
+
+  console.group("generateEntityNode");
+  console.log("name", name);
   console.log("attributes", attributes);
   console.log("relations", relations);
+  console.log("relationType", relationType);
+  console.log("__relationsTarget", relationsTarget);
+  console.log("__relationsSource", relationsSource);
+
+  console.groupEnd();
 
   const obj = {
     id: name,
-    type: "model",
+    type: "entity",
     position: { x: 250, y: 25 },
     data: {
-      type: "model",
+      type: "entity",
       name,
+      relationsTarget,
+      relationType,
+      relationsSource,
       columns: attributes.map(
         ({
           name,
           _conf,
-
+          relation,
           // relationName,
           // relationFromFields,
           // relationToFields,
@@ -135,6 +161,7 @@ const generateEntityNode = (
           relationName: (relations[_conf.type.value] as Relation | undefined)
             ? _conf.type.value
             : undefined,
+          relation,
           // relationFromFields,
           // relationToFields,
           relationType: (
@@ -143,9 +170,7 @@ const generateEntityNode = (
               | undefined
           )?.type,
           // `isList` and `isRequired` are mutually exclusive as per the spec
-          displayType: !_conf.nullable
-            ? _conf.type.value
-            : `${_conf.type.value}?`,
+          displayType: _conf.type.value,
           type: _conf.type.value,
           // defaultValue: !hasDefaultValue
           //   ? null
@@ -163,7 +188,6 @@ const generateEntityNode = (
       ),
     },
   };
-  console.log("- generateEntityNode obj", obj);
 
   return obj;
 };
@@ -345,19 +369,19 @@ export const dmmfToElements = (data: DMMF.Datamodel): DMMFToElementsResult => {
 };
 
 export const schemaToElements = (data: schemaType): DMMFToElementsResult => {
-  // console.log("----------- schemaToElements---------------");
-
   const entitiesName = data.entities.map((entity) => entity.name);
 
   const filterFields = () =>
     data.entities.flatMap(({ name: entityName, attributes }) => {
-      return attributes
-        .filter((entity) => entitiesName.includes(entity._conf.type.value))
-        .map((entity) => ({ ...entity, entityName }));
+      return (
+        attributes
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          .filter((entity) => entitiesName.includes(entity?._conf.type.value))
+          .map((entity) => ({ ...entity, entityName }))
+      );
     });
 
   const relationFields = filterFields();
-  console.log("-----------relationFields", relationFields);
   // // `pipe` typing broke so I have to do this for now. Reeeeaaaally fucking need
   // // that pipeline operator.
 
@@ -365,7 +389,6 @@ export const schemaToElements = (data: schemaType): DMMFToElementsResult => {
     entities: data.entities,
     relationFields,
   });
-  console.log("schemaToElements data.entities", data.entities);
 
   const intermediate2 = Object.entries(intermediate1).map(
     ([key, [one, two]]) => {
@@ -377,10 +400,19 @@ export const schemaToElements = (data: schemaType): DMMFToElementsResult => {
       // else return [key, { type: "1-1", fields: [one, two] }];
     }
   );
-  // console.log("schemaToElements intermediate2", intermediate2);
 
   const relations: Readonly<Record<string, Relation>> =
     Object.fromEntries(intermediate2);
+
+  console.group("-----------------schemaToElements");
+  console.log("data.entities", data.entities);
+
+  console.log("relationFields", relationFields);
+  console.log("intermediate2", intermediate2);
+  console.log("relations", relations);
+
+  console.groupEnd();
+
   // console.log("relations", relations);
   // const implicitManyToMany = Object.entries(relations)
   //   .filter(([, { type }]) => type === "m-n")
@@ -407,6 +439,12 @@ export const schemaToElements = (data: schemaType): DMMFToElementsResult => {
   //         })),
   //       } as DMMF.Model)
   //   );
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  for (const entity of data.entities)
+    for (const attribute of entity.attributes)
+      if (entitiesName.includes(attribute._conf.type.value))
+        attribute.relation = true;
 
   return {
     nodes: [

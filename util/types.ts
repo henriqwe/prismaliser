@@ -20,6 +20,9 @@ export interface ModelNodeData {
   name: string;
   dbName?: string | null;
   documentation?: string;
+  relationsTarget?: attributesTYPE[];
+  relationsSource?: attributesTYPE[];
+  relationType?: string[];
   columns: Array<{
     name: string;
     type: string;
@@ -82,6 +85,7 @@ export interface attributesTYPE {
   command: string;
   name: string;
   relationName?: string;
+  relation?: boolean;
   _conf: {
     nullable?: boolean;
     length?: string;

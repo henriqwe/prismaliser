@@ -51,7 +51,6 @@ const ModelNode = ({ data }: ModelNodeProps) => {
       setCenter(x, y, { zoom, duration: 1000 });
     }
   };
-
   return (
     <table
       className="font-sans bg-white border-2 border-separate border-black rounded-lg"
@@ -60,53 +59,70 @@ const ModelNode = ({ data }: ModelNodeProps) => {
       <thead title={data.documentation}>
         <tr>
           <th
-            className="p-2 font-extrabold bg-gray-200 border-b-2 border-black rounded-t-md"
+            className="p-2 font-extrabold bg-gray-200 border-b-2 border-black rounded-t-md "
             colSpan={4}
           >
-            {data.name}
-            {!!data.dbName && (
-              <span className="font-mono font-normal">
-                &nbsp;({data.dbName})
-              </span>
-            )}
+            <div className="flex flex-col">
+              <span className="text-xs"> &lt;&lt;Entity&gt;&gt;</span>
+              <span>{data.name}</span>
+            </div>
           </th>
         </tr>
       </thead>
       <tbody>
-        {data.columns.map((col) => (
-          <tr key={col.name} className={styles.row} title={col.documentation}>
-            <td className="font-mono font-semibold border-t-2 border-r-2 border-gray-300">
-              <button
-                type="button"
-                className={cc([
-                  "relative",
-                  "p-2",
-                  { "cursor-pointer": isTarget(col) || isSource(col) },
-                ])}
-                onClick={() => {
-                  if (!isTarget(col) && !isSource(col)) return;
+        {data.columns
+          .filter((col) => col.relation !== true)
+          .map((col) => (
+            <tr key={col.name} className={styles.row} title={col.documentation}>
+              <td className="font-mono font-semibold">
+                <button
+                  type="button"
+                  className={cc([
+                    "relative",
+                    "py-1",
+                    "px-2",
 
-                  focusNode(col.type);
-                }}
-              >
-                {col.name}
-                {isTarget(col) && (
-                  <Handle
-                    key={`${data.name}-${col.relationName || col.name}`}
-                    className={cc([styles.handle, styles.left])}
-                    type="target"
-                    id={`${data.name}-${col.relationName || col.name}`}
-                    position={Position.Left}
-                    isConnectable={false}
-                  />
-                )}
-              </button>
-            </td>
-            <td className="p-2 font-mono border-t-2 border-r-2 border-gray-300">
-              {col.displayType}
-            </td>
-          </tr>
-        ))}
+                    { "cursor-pointer": isTarget(col) || isSource(col) },
+                  ])}
+                  onClick={() => {
+                    if (!isTarget(col) && !isSource(col)) return;
+
+                    focusNode(col.type);
+                  }}
+                >
+                  {col.name}:{" "}
+                  <span className="text-gray-500">{col.displayType}</span>
+                </button>
+              </td>
+            </tr>
+          ))}
+        {data.relationsTarget?.map((relations) => {
+          return (
+            <Handle
+              key={`${data.name}-${relations.name}`}
+              className={cc([styles.handle, styles.left])}
+              type="source"
+              id={`${data.name}-${relations.name}-${relations._conf.type.value}`}
+              position={Position.Left}
+              isConnectable={false}
+            />
+          );
+        })}
+        {data.relationsSource?.map((relations) => {
+          console.log(">>>> relationsSource relations", relations);
+          console.log(">>>> ", `${data.name}-${relations.name}`);
+
+          return (
+            <Handle
+              key={`${data.name}-${relations.name}`}
+              className={cc([styles.handle, styles.Right])}
+              type="target"
+              id={`${data.name}-${relations.name}`}
+              position={Position.Right}
+              isConnectable={false}
+            />
+          );
+        })}
       </tbody>
     </table>
   );
