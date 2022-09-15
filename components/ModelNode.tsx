@@ -109,9 +109,6 @@ const ModelNode = ({ data }: ModelNodeProps) => {
           );
         })}
         {data.relationsSource?.map((relations) => {
-          console.log(">>>> relationsSource relations", relations);
-          console.log(">>>> ", `${data.name}-${relations.name}`);
-
           return (
             <Handle
               key={`${data.name}-${relations.name}`}

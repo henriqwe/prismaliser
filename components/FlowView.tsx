@@ -68,40 +68,41 @@ const FlowView = ({ dmmf, schema }: FlowViewProps) => {
       <svg width="0" height="0">
         <defs>
           <marker
-            id="prismaliser-one"
-            markerWidth="12.5"
+            id="prismaliser-1n"
+            markerWidth="32.5"
             markerHeight="12.5"
-            viewBox="-10 -10 20 20"
+            viewBox="-20 0 20 20"
             orient="auto-start-reverse"
             refX="0"
             refY="0"
           >
-            <polyline
-              className="text-gray-400 stroke-current"
-              strokeWidth="3"
-              strokeLinecap="square"
-              fill="none"
-              points="-10,-8 -10,8"
-            />
+            <text
+              x="-35"
+              y="15"
+              fill="gray"
+              className="text-gray-400 stroke-current text-xs"
+            >
+              1..*
+            </text>
           </marker>
-
           <marker
-            id="prismaliser-many"
-            markerWidth="12.5"
+            id="prismaliser-n1"
+            markerWidth="22.5"
             markerHeight="12.5"
-            viewBox="-10 -10 20 20"
+            viewBox="-10 -20 20 20"
             orient="auto-start-reverse"
             refX="0"
             refY="0"
           >
-            <polyline
-              className="text-gray-400 stroke-current"
-              strokeLinejoin="round"
-              strokeLinecap="square"
-              strokeWidth="1.5"
-              fill="none"
-              points="0,-8 -10,0 0,8"
-            />
+            <text
+              x="-10"
+              y="-15"
+              fill="gray"
+              className="text-gray-400 stroke-current text-xs"
+              rotate={180}
+            >
+              1
+            </text>
           </marker>
         </defs>
       </svg>

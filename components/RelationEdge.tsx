@@ -57,7 +57,7 @@ const RelationEdge = ({
   const { relationType } = data!;
   const [markerStart, markerEnd] = {
     "m-n": ["url(#prismaliser-many)", "url(#prismaliser-many)"],
-    "1-n": ["url(#prismaliser-many)", "url(#prismaliser-one)"],
+    "1-n": ["url(#prismaliser-1n)", "url(#prismaliser-n1)"],
     "1-1": ["url(#prismaliser-one)", "url(#prismaliser-one)"],
   }[relationType];
 
