@@ -35,6 +35,10 @@ const ModelNode = ({ data }: ModelNodeProps) => {
   const store = useStoreApi();
   const { setCenter, getZoom } = useReactFlow();
 
+  function handleStyle(index: number) {
+    return { top: 78 + index * 33, right: -6 };
+  }
+
   const focusNode = (nodeId: string) => {
     const { nodeInternals } = store.getState();
     const nodes = Array.from(nodeInternals).map(([, node]) => node);
@@ -96,7 +100,8 @@ const ModelNode = ({ data }: ModelNodeProps) => {
               </td>
             </tr>
           ))}
-        {data.relationsTarget?.map((relations) => {
+
+        {data.relationsTarget?.map((relations, idx) => {
           return (
             <Handle
               key={`${data.name}-${relations.name}`}
@@ -105,10 +110,11 @@ const ModelNode = ({ data }: ModelNodeProps) => {
               id={`${data.name}-${relations.name}-${relations._conf.type.value}`}
               position={Position.Left}
               isConnectable={false}
+              style={handleStyle(idx)}
             />
           );
         })}
-        {data.relationsSource?.map((relations) => {
+        {data.relationsSource?.map((relations, idx) => {
           return (
             <Handle
               key={`${data.name}-${relations.name}`}
@@ -117,6 +123,7 @@ const ModelNode = ({ data }: ModelNodeProps) => {
               id={`${data.name}-${relations.name}`}
               position={Position.Right}
               isConnectable={false}
+              style={handleStyle(idx)}
             />
           );
         })}
